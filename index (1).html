@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Como isso está protegido? | Hack na Ideação</title>
+<meta name="description" content="Quiz de abertura do Hack na Ideação: descubra como produtos do dia a dia estão protegidos.">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --violet: #5B3DA8;
+    --blue: #2F6FE0;
+    --ink: #1F2A5C;
+    --muted: #56608A;
+    --paper: #F4F6FC;
+    --tile: #FFFFFF;
+    --line: #D9E0F2;
+    --right: #13A876;
+    --wrong: #E0454F;
+    --display: "Bricolage Grotesque", "Arial Narrow", Arial, sans-serif;
+    --body: "Figtree", "Segoe UI", Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html, body { margin: 0; min-height: 100%; }
+  html { background: #F4F6FC; }
+  body {
+    font-family: var(--body);
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .band {
+    background: linear-gradient(120deg, var(--violet), var(--blue));
+    color: #fff;
+    padding: 20px 20px 72px;
+  }
+  .band-inner, main { max-width: 560px; margin: 0 auto; }
+  .event { font-size: 0.9rem; font-weight: 500; opacity: 0.85; margin: 0; }
+  main { padding: 0 20px 40px; margin-top: -52px; }
+
+  .card {
+    background: var(--tile);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px rgba(47, 58, 120, 0.14);
+    position: relative;
+    overflow: hidden;
+  }
+  h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
+  h1 { font-size: clamp(2.4rem, 9vw, 3.4rem); }
+  h2 { font-size: clamp(2rem, 8vw, 2.9rem); }
+  p { margin: 0; }
+  .lead { color: var(--muted); font-size: 1.05rem; margin-top: 14px; max-width: 42ch; }
+
+  .btn {
+    font: 700 1.05rem var(--body);
+    border: 0;
+    border-radius: 999px;
+    padding: 15px 28px;
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+    margin-top: 26px;
+    width: 100%;
+  }
+  .btn:hover { background: var(--violet); }
+  button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; padding: 0; list-style: none; }
+  .legend li { border: 1.5px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; font-weight: 500; color: var(--muted); }
+
+  /* Progresso */
+  .progress { display: flex; gap: 6px; margin-bottom: 22px; }
+  .progress span { height: 6px; flex: 1; border-radius: 3px; background: var(--line); }
+  .progress span.done { background: var(--blue); }
+  .progress span.now { background: var(--violet); }
+  .count { font-size: 0.9rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+  .desc { color: var(--muted); margin-top: 10px; font-size: 1.02rem; }
+  .ask { font-weight: 700; margin-top: 24px; }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .opt {
+    font: 700 1rem var(--body);
+    color: var(--ink);
+    background: var(--paper);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 16px 12px;
+    text-align: left;
+    cursor: pointer;
+    display: flex; gap: 10px; align-items: center;
+    min-height: 58px;
+    transition: background .15s, border-color .15s, opacity .2s;
+  }
+  .opt:last-child { grid-column: 1 / -1; }
+  .opt .key {
+    flex: none; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: #fff; color: var(--blue); font-size: 0.9rem;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--blue); }
+  .opt:disabled { cursor: default; }
+  .opt.is-right { background: var(--right); color: #fff; }
+  .opt.is-right .key { color: var(--right); }
+  .opt.is-wrong { background: var(--wrong); color: #fff; }
+  .opt.is-wrong .key { color: var(--wrong); }
+  .opt.faded { opacity: 0.4; }
+
+  /* Carimbo: o momento de destaque da página */
+  .stamp {
+    position: absolute; top: 62px; right: 18px;
+    font-family: var(--display); font-weight: 800;
+    font-size: 1rem; line-height: 1.1; text-align: center; text-transform: uppercase;
+    color: var(--violet);
+    border: 3px solid var(--violet);
+    border-radius: 10px;
+    padding: 8px 12px;
+    transform: rotate(-9deg);
+    max-width: 150px;
+    pointer-events: none;
+    animation: stamp .35s cubic-bezier(.2,1.6,.4,1) both;
+  }
+  @keyframes stamp { from { transform: rotate(-9deg) scale(2.2); opacity: 0; } to { transform: rotate(-9deg) scale(1); opacity: 1; } }
+
+  .card.stamped h2 { padding-right: 130px; }
+  @media (max-width: 380px) { .card.stamped h2 { padding-right: 0; } }
+  .feedback { margin-top: 22px; border-top: 2px dashed var(--line); padding-top: 18px; }
+  .verdict { font-family: var(--display); font-weight: 800; font-size: 1.5rem; line-height: 1.15; }
+  .verdict.ok { color: var(--right); }
+  .verdict.no { color: var(--wrong); }
+  .fact { margin-top: 8px; color: var(--ink); max-width: 60ch; }
+
+  /* Resultado */
+  .score { font-family: var(--display); font-weight: 800; font-size: clamp(4.5rem, 22vw, 7rem); line-height: 0.9; color: var(--violet); letter-spacing: -0.04em; }
+  .score small { font-size: 0.4em; color: var(--muted); letter-spacing: 0; }
+  .chat {
+    margin-top: 22px; background: var(--paper); border-radius: 14px; padding: 16px 18px;
+  }
+  .chat strong { display: block; margin-bottom: 4px; }
+  .hook { margin-top: 22px; font-family: var(--display); font-weight: 600; font-size: 1.35rem; line-height: 1.2; }
+  .ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+  .ghost:hover { background: var(--paper); }
+
+  footer { max-width: 560px; margin: 0 auto; padding: 0 20px 28px; font-size: 0.85rem; color: var(--muted); }
+
+  .enter { animation: enter .3s ease-out both; }
+  @keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 380px) { .options { grid-template-columns: 1fr; } .stamp { position: static; display: inline-block; margin-bottom: 14px; } }
+  @media (prefers-reduced-motion: reduce) { .stamp, .enter { animation: none; } }
+</style>
+</head>
+<body>
+  <div class="band">
+    <div class="band-inner">
+      <p class="event">Hack na Ideação, SESI Experience Hackathon</p>
+    </div>
+  </div>
+
+  <main>
+    <section class="card" id="app" aria-live="polite"></section>
+  </main>
+
+  <footer>Facilitação: Lara Guerreiro Pires, INPI</footer>
+
+<script>
+const OPTIONS = ["Patente", "Marca", "Desenho industrial", "Software", "Segredo"];
+const KEYS = ["A", "B", "C", "D", "E"];
+
+const QUESTIONS = [
+  {
+    name: "Velcro",
+    desc: "O fecho que gruda no tênis, na mochila e na jaqueta.",
+    right: [0],
+    fact: "Um engenheiro suíço voltou de um passeio com o cachorro coberto de sementes grudadas. No microscópio, viu pequenos ganchos e criou o fecho de ganchos e laços, patenteado nos anos 1950."
+  },
+  {
+    name: "Bina",
+    desc: "O identificador de chamadas que mostra quem está ligando.",
+    right: [0],
+    fact: "Invenção brasileira, de Nélio Nicolai. O uso da tecnologia pelas operadoras gerou uma longa disputa judicial sobre a patente."
+  },
+  {
+    name: "Fórmula da Coca-Cola",
+    desc: "A receita do refrigerante mais famoso do mundo.",
+    right: [4],
+    fact: "Nunca foi patenteada! A patente exigiria revelar a receita e, depois de 20 anos, qualquer um poderia usá-la. Em segredo, está protegida há mais de um século."
+  },
+  {
+    name: "Garrafa da Coca-Cola",
+    desc: "O formato curvilíneo da garrafa de vidro.",
+    right: [2, 1],
+    fact: "Criada em 1915 para ser reconhecida até no escuro ou quebrada. A forma foi protegida como design e, com o tempo, virou também uma marca. Por isso, as duas respostas valem."
+  },
+  {
+    name: "Nome e logo de um app",
+    desc: "Aquilo que você reconhece em um segundo na tela do celular.",
+    right: [1],
+    fact: "A marca diferencia um produto dos concorrentes. Protege nome, logo e até formas, e pode durar para sempre, com renovação a cada 10 anos."
+  },
+  {
+    name: "Código de um aplicativo",
+    desc: "As linhas de programação que fazem o app funcionar.",
+    right: [3],
+    fact: "Programa de computador é protegido por direito autoral, e o registro no INPI serve como prova de autoria. Atenção: a ideia do app, sozinha, não se protege. O que se protege é o código."
+  }
+];
+
+const app = document.getElementById("app");
+let current = 0;
+let score = 0;
+
+function el(html) {
+  app.innerHTML = html;
+  app.classList.remove("stamped");
+  app.classList.remove("enter");
+  void app.offsetWidth;
+  app.classList.add("enter");
+}
+
+function start() {
+  current = 0;
+  score = 0;
+  el(`
+    <h1>Como isso está protegido?</h1>
+    <p class="lead">Seis coisas que você usa todo dia. Para cada uma, escolha o tipo de proteção. Depois, conte seu placar no chat.</p>
+    <ul class="legend" aria-label="Opções de resposta">
+      ${OPTIONS.map(o => `<li>${o}</li>`).join("")}
+    </ul>
+    <button class="btn" id="go">Começar</button>
+  `);
+  document.getElementById("go").onclick = showQuestion;
+}
+
+function progress() {
+  return `<div class="progress" aria-hidden="true">${QUESTIONS.map((_, i) =>
+    `<span class="${i < current ? "done" : i === current ? "now" : ""}"></span>`).join("")}</div>`;
+}
+
+function showQuestion() {
+  const q = QUESTIONS[current];
+  el(`
+    ${progress()}
+    <p class="count">${current + 1} de ${QUESTIONS.length}</p>
+    <h2>${q.name}</h2>
+    <p class="desc">${q.desc}</p>
+    <p class="ask">Como isso está protegido?</p>
+    <div class="options">
+      ${OPTIONS.map((o, i) => `<button class="opt" data-i="${i}"><span class="key">${KEYS[i]}</span>${o}</button>`).join("")}
+    </div>
+    <div id="fb"></div>
+  `);
+  app.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(+b.dataset.i));
+  app.querySelector(".opt").focus({ preventScroll: true });
+}
+
+function answer(choice) {
+  const q = QUESTIONS[current];
+  const ok = q.right.includes(choice);
+  if (ok) score++;
+
+  app.querySelectorAll(".opt").forEach(b => {
+    const i = +b.dataset.i;
+    b.disabled = true;
+    if (q.right.includes(i)) b.classList.add("is-right");
+    else if (i === choice) b.classList.add("is-wrong");
+    else b.classList.add("faded");
+  });
+
+  const label = q.right.map(i => OPTIONS[i]).join(" e ");
+  const stamp = document.createElement("div");
+  stamp.className = "stamp";
+  stamp.setAttribute("aria-hidden", "true");
+  stamp.textContent = label;
+  app.prepend(stamp);
+  app.classList.add("stamped");
+
+  let verdict;
+  if (ok && q.right.length > 1) verdict = "Certo! E tem mais uma resposta.";
+  else if (ok) verdict = "Acertou!";
+  else verdict = `Quase! A resposta é ${label.toLowerCase()}.`;
+
+  const last = current === QUESTIONS.length - 1;
+  document.getElementById("fb").innerHTML = `
+    <div class="feedback">
+      <p class="verdict ${ok ? "ok" : "no"}">${verdict}</p>
+      <p class="fact">${q.fact}</p>
+      <button class="btn" id="next">${last ? "Ver meu placar" : "Próxima"}</button>
+    </div>
+  `;
+  const next = document.getElementById("next");
+  next.onclick = () => { if (last) showResult(); else { current++; showQuestion(); } };
+  next.focus({ preventScroll: true });
+  next.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+}
+
+function showResult() {
+  const msg =
+    score === QUESTIONS.length ? "Gabaritou! Você já pensa como quem protege ideias." :
+    score >= 4 ? "Mandou bem! Seu radar de propriedade intelectual está ligado." :
+    score >= 2 ? "Bom começo! Até o fim da manhã, esse placar muda." :
+    "Tudo certo: é para isso que estamos aqui hoje.";
+  el(`
+    <p class="count">Seu placar</p>
+    <p class="score">${score}<small> de ${QUESTIONS.length}</small></p>
+    <p class="lead">${msg}</p>
+    <div class="chat">
+      <strong>Agora é com você</strong>
+      Escreva no chat do Teams: “Acertei ${score} de ${QUESTIONS.length}”.
+    </div>
+    <p class="hook">Cada resposta era um tipo de proteção. No final da manhã, a pergunta será outra: como a ideia do seu time pode ser protegida?</p>
+    <button class="btn ghost" id="again">Jogar de novo</button>
+  `);
+  document.getElementById("again").onclick = start;
+}
+
+start();
+</script>
+</body>
+</html>
