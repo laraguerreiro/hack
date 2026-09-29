@@ -149,6 +149,27 @@
   .ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
   .ghost:hover { background: var(--paper); }
 
+
+  .live { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-weight: 700; font-size: 0.95rem; background: rgba(255,255,255,0.16); border-radius: 999px; padding: 5px 14px 5px 10px; }
+  .live[hidden] { display: none; }
+  .live .dot { width: 9px; height: 9px; border-radius: 50%; background: #5CF0B5; box-shadow: 0 0 0 0 rgba(92,240,181,.7); animation: pulse 2s infinite; }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(92,240,181,0); } 100% { box-shadow: 0 0 0 0 rgba(92,240,181,0); } }
+
+  .compare { margin-top: 26px; }
+  .compare h3 { font-family: var(--display); font-weight: 800; font-size: 1.35rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .compare .note { color: var(--muted); font-size: 0.92rem; margin-bottom: 14px; }
+  .row { padding: 12px 0; border-top: 1px solid var(--line); }
+  .row-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .row-name { font-weight: 700; }
+  .mine { font-size: 0.85rem; font-weight: 700; white-space: nowrap; }
+  .mine.ok { color: var(--right); }
+  .mine.no { color: var(--wrong); }
+  .bar { height: 10px; background: var(--paper); border-radius: 5px; margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--blue); border-radius: 5px; transition: width .6s ease; }
+  .pct { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .highlight { margin-top: 18px; background: var(--violet); color: #fff; border-radius: 14px; padding: 16px 18px; font-weight: 500; }
+  @media (prefers-reduced-motion: reduce) { .live .dot { animation: none; } .bar i { transition: none; } }
+
   footer { max-width: 560px; margin: 0 auto; padding: 0 20px 28px; font-size: 0.85rem; color: var(--muted); }
 
   .enter { animation: enter .3s ease-out both; }
@@ -162,6 +183,7 @@
   <div class="band">
     <div class="band-inner">
       <p class="event">Hack na Ideação, SESI Experience Hackathon</p>
+      <p class="live" id="live" hidden><span class="dot"></span><span id="liveText"></span></p>
     </div>
   </div>
 
@@ -171,43 +193,68 @@
 
   <footer>Facilitação: Lara Guerreiro Pires, INPI</footer>
 
-<script>
+<script type="module">
+/* ============================================================
+   CONFIGURAÇÃO DO FIREBASE
+   Cole aqui o bloco firebaseConfig gerado no console do Firebase.
+   Enquanto estiver vazio, o quiz funciona normalmente,
+   só sem o contador e sem a comparação com a turma.
+   ============================================================ */
+/* Nome da "gaveta" deste artefacto no banco. Cada artefacto usa um nome diferente. */
+const ARTEFATO = "quiz-abertura";
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAnrrc93EpTPseSXY4Iv-3tAkreU3yRCPc",
+  authDomain: "hack-pi.firebaseapp.com",
+  databaseURL: "https://hack-pi-default-rtdb.firebaseio.com",
+  projectId: "hack-pi",
+  storageBucket: "hack-pi.firebasestorage.app",
+  messagingSenderId: "58776084122",
+  appId: "1:58776084122:web:4ded8efa89196ea20a4923"
+};
+
 const OPTIONS = ["Patente", "Marca", "Desenho industrial", "Software", "Segredo"];
 const KEYS = ["A", "B", "C", "D", "E"];
 
 const QUESTIONS = [
   {
     name: "Velcro",
+    about: "o Velcro",
     desc: "O fecho que gruda no tênis, na mochila e na jaqueta.",
     right: [0],
     fact: "Um engenheiro suíço voltou de um passeio com o cachorro coberto de sementes grudadas. No microscópio, viu pequenos ganchos e criou o fecho de ganchos e laços, patenteado nos anos 1950."
   },
   {
     name: "Bina",
+    about: "o Bina",
     desc: "O identificador de chamadas que mostra quem está ligando.",
     right: [0],
     fact: "Invenção brasileira, de Nélio Nicolai. O uso da tecnologia pelas operadoras gerou uma longa disputa judicial sobre a patente."
   },
   {
     name: "Fórmula da Coca-Cola",
+    about: "a fórmula da Coca-Cola",
     desc: "A receita do refrigerante mais famoso do mundo.",
     right: [4],
     fact: "Nunca foi patenteada! A patente exigiria revelar a receita e, depois de 20 anos, qualquer um poderia usá-la. Em segredo, está protegida há mais de um século."
   },
   {
     name: "Garrafa da Coca-Cola",
+    about: "a garrafa da Coca-Cola",
     desc: "O formato curvilíneo da garrafa de vidro.",
     right: [2, 1],
     fact: "Criada em 1915 para ser reconhecida até no escuro ou quebrada. A forma foi protegida como design e, com o tempo, virou também uma marca. Por isso, as duas respostas valem."
   },
   {
     name: "Nome e logo de um app",
+    about: "o nome e o logo de um app",
     desc: "Aquilo que você reconhece em um segundo na tela do celular.",
     right: [1],
     fact: "A marca diferencia um produto dos concorrentes. Protege nome, logo e até formas, e pode durar para sempre, com renovação a cada 10 anos."
   },
   {
     name: "Código de um aplicativo",
+    about: "o código de um aplicativo",
     desc: "As linhas de programação que fazem o app funcionar.",
     right: [3],
     fact: "Programa de computador é protegido por direito autoral, e o registro no INPI serve como prova de autoria. Atenção: a ideia do app, sozinha, não se protege. O que se protege é o código."
@@ -217,6 +264,47 @@ const QUESTIONS = [
 const app = document.getElementById("app");
 let current = 0;
 let score = 0;
+let results = [];
+let stats = null;           // { q0: { total, right }, ... }
+let db = null, fb = null;
+let counts = true;          // só a primeira rodada deste aparelho entra nas estatísticas
+
+try { counts = localStorage.getItem("quizHackContado") !== "1"; } catch (e) {}
+
+async function initFirebase() {
+  if (!FIREBASE_CONFIG.databaseURL) return;
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    fb = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    db = fb.getDatabase(appMod.initializeApp(FIREBASE_CONFIG));
+
+    const me = fb.push(fb.ref(db, `${ARTEFATO}/presence`));
+    fb.onValue(fb.ref(db, ".info/connected"), snap => {
+      if (snap.val() === true) fb.onDisconnect(me).remove().then(() => fb.set(me, true));
+    });
+    fb.onValue(fb.ref(db, `${ARTEFATO}/presence`), snap => {
+      const n = snap.size || 0;
+      const live = document.getElementById("live");
+      document.getElementById("liveText").textContent =
+        n === 1 ? "1 pessoa respondendo agora" : `${n} pessoas respondendo agora`;
+      live.hidden = n < 1;
+    });
+    fb.onValue(fb.ref(db, `${ARTEFATO}/stats`), snap => {
+      stats = snap.val() || {};
+      if (document.getElementById("compare")) renderCompare();
+    });
+  } catch (e) {
+    db = null;
+  }
+}
+
+function record(i, ok) {
+  if (!db || !counts) return;
+  const upd = {};
+  upd[`${ARTEFATO}/stats/q${i}/total`] = fb.increment(1);
+  if (ok) upd[`${ARTEFATO}/stats/q${i}/right`] = fb.increment(1);
+  fb.update(fb.ref(db), upd).catch(() => {});
+}
 
 function el(html) {
   app.innerHTML = html;
@@ -229,6 +317,7 @@ function el(html) {
 function start() {
   current = 0;
   score = 0;
+  results = [];
   el(`
     <h1>Como isso está protegido?</h1>
     <p class="lead">Seis coisas que você usa todo dia. Para cada uma, escolha o tipo de proteção. Depois, conte seu placar no chat.</p>
@@ -266,6 +355,8 @@ function answer(choice) {
   const q = QUESTIONS[current];
   const ok = q.right.includes(choice);
   if (ok) score++;
+  results[current] = ok;
+  record(current, ok);
 
   app.querySelectorAll(".opt").forEach(b => {
     const i = +b.dataset.i;
@@ -312,16 +403,52 @@ function showResult() {
     <p class="count">Seu placar</p>
     <p class="score">${score}<small> de ${QUESTIONS.length}</small></p>
     <p class="lead">${msg}</p>
+    <div id="compare"></div>
     <div class="chat">
       <strong>Agora é com você</strong>
       Escreva no chat do Teams: “Acertei ${score} de ${QUESTIONS.length}”.
     </div>
-    <p class="hook">Cada resposta era um tipo de proteção. No final da manhã, a pergunta será outra: como a solução do seu time pode ser protegida?</p>
+    <p class="hook">Cada resposta era um tipo de proteção. No final da manhã, a pergunta será outra: como a ideia do seu time pode ser protegida?</p>
     <button class="btn ghost" id="again">Jogar de novo</button>
   `);
+  if (counts) { counts = false; try { localStorage.setItem("quizHackContado", "1"); } catch (e) {} }
   document.getElementById("again").onclick = start;
+  renderCompare();
 }
 
+function renderCompare() {
+  const box = document.getElementById("compare");
+  if (!box || !stats) return;
+  const rows = QUESTIONS.map((q, i) => {
+    const st = stats["q" + i] || {};
+    const total = st.total || 0;
+    const pct = total ? Math.round(100 * (st.right || 0) / total) : null;
+    return { name: q.name, about: q.about, mine: results[i], pct, total };
+  });
+  if (!rows.some(r => r.total > 0)) { box.innerHTML = ""; return; }
+
+  const players = Math.max(...rows.map(r => r.total));
+  let best = null;
+  rows.forEach(r => { if (r.mine && r.pct !== null && (!best || r.pct < best.pct)) best = r; });
+
+  box.className = "compare";
+  box.innerHTML = `
+    <h3>Você e a turma</h3>
+    <p class="note">${players === 1 ? "1 pessoa respondeu" : players + " pessoas responderam"} até agora. Os números se atualizam sozinhos.</p>
+    ${rows.map(r => `
+      <div class="row">
+        <div class="row-top">
+          <span class="row-name">${r.name}</span>
+          <span class="mine ${r.mine ? "ok" : "no"}">${r.mine ? "✓ Você acertou" : "✗ Você errou"}</span>
+        </div>
+        <div class="bar" role="img" aria-label="${r.pct ?? 0}% da turma acertou"><i style="width:${r.pct ?? 0}%"></i></div>
+        <p class="pct">${r.pct === null ? "Sem respostas ainda" : r.pct + "% da turma acertou"}</p>
+      </div>`).join("")}
+    ${best && best.pct < 60 ? `<p class="highlight">Você acertou ${best.about}, que só ${best.pct}% da turma acertou!</p>` : ""}
+  `;
+}
+
+initFirebase();
 start();
 </script>
 </body>
