@@ -75,6 +75,31 @@
   footer { padding: 0 28px 24px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 0.85rem; }
   .ghost { font: 600 0.85rem var(--body); color: var(--muted); background: transparent; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
   .ghost:hover { background: #fff; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ghost.strong { color: #fff; background: var(--ink); border-color: var(--ink); }
+  .ghost.strong:hover { background: var(--violet); border-color: var(--violet); }
+  .note { font-size: 0.85rem; color: var(--muted); }
+  #printout { display: none; }
+
+  @media print {
+    @page { size: A4 landscape; margin: 12mm; }
+    body { background: #fff; }
+    header, main, footer { display: none !important; }
+    #printout { display: block; }
+    .p-page { page-break-after: always; break-after: page; }
+    .p-page:last-child { page-break-after: auto; break-after: auto; }
+    .p-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #1F2A5C; padding-bottom: 6px; margin-bottom: 8px; }
+    .p-head h2 { font-family: var(--display); font-size: 20pt; margin: 0; }
+    .p-head span { font-size: 9pt; color: #56608A; }
+    .p-q { font-size: 10pt; color: #3C4670; margin: 0 0 10px; }
+    .p-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .p-col { border: 1px solid #D9E0F2; border-top: 4px solid var(--accent); border-radius: 6px; padding: 8px; }
+    .p-col h3 { font-size: 11pt; margin: 0 0 6px; }
+    .p-col ul { margin: 0; padding-left: 14px; font-size: 10pt; }
+    .p-col li { margin-bottom: 4px; }
+    .p-empty { font-size: 9pt; color: #999; font-style: italic; }
+    .p-foot { margin-top: 10px; font-size: 8pt; color: #56608A; }
+  }
 
   @keyframes pop { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
@@ -97,8 +122,13 @@
 
 <footer>
   <span>Facilitação: Lara Guerreiro Pires, INPI</span>
-  <button class="ghost" id="reset">Limpar o quadro deste desafio</button>
+  <span class="actions">
+    <button class="ghost" id="reset">Limpar o quadro deste desafio</button>
+    <button class="ghost strong" id="print">Imprimir este desafio (ou salvar em PDF)</button>
+  </span>
 </footer>
+
+<div id="printout" aria-hidden="true"></div>
 
 <script>
 const DESAFIOS = [
@@ -118,23 +148,25 @@ const COLUNAS = [
   { id: "combina", titulo: "E se combinássemos…?", dica: "Juntar ideias de áreas diferentes" },
   { id: "diferenca", titulo: "Nossa diferença", dica: "Uma proposta em uma frase" }
 ];
-const KEY = "brainstormHackIdeacao";
-
-let data = load();
+let data = inicial();
 let atual = "d1";
 
-function load() {
-  let d = null;
-  try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-  if (!d) {
-    d = {};
-    DESAFIOS.forEach(x => {
-      d[x.id] = { existe: [...x.inicial], falta: [], combina: [], diferenca: [] };
-    });
-  }
+function inicial() {
+  const d = {};
+  DESAFIOS.forEach(x => { d[x.id] = { existe: [...x.inicial], falta: [], combina: [], diferenca: [] }; });
   return d;
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} }
+/* Nada é gravado: o conteúdo existe só enquanto a página está aberta. */
+function save() {}
+function temConteudo() {
+  return DESAFIOS.some(x => {
+    const b = data[x.id];
+    return b.falta.length || b.combina.length || b.diferenca.length || b.existe.length > x.inicial.length;
+  });
+}
+window.addEventListener("beforeunload", e => {
+  if (temConteudo()) { e.preventDefault(); e.returnValue = ""; }
+});
 
 function esc(t) { return t.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
@@ -149,6 +181,10 @@ function renderTabs() {
 function render() {
   renderTabs();
   document.getElementById("reset").hidden = atual === "geral";
+  const d0 = DESAFIOS.find(x => x.id === atual);
+  document.getElementById("print").textContent = d0
+    ? `Imprimir o ${d0.tag} (ou salvar em PDF)`
+    : "Imprimir os três desafios (ou salvar em PDF)";
   const main = document.getElementById("main");
   if (atual === "geral") return renderGeral(main);
 
@@ -223,6 +259,29 @@ document.getElementById("reset").onclick = () => {
   data[atual] = { existe: [...d.inicial], falta: [], combina: [], diferenca: [] };
   save(); render();
 };
+
+function montarImpressao() {
+  const lista = atual === "geral" ? DESAFIOS : DESAFIOS.filter(d => d.id === atual);
+  const hoje = new Date().toLocaleDateString("pt-BR");
+  document.getElementById("printout").innerHTML = lista.map(d => {
+    const b = data[d.id];
+    return `
+    <section class="p-page">
+      <div class="p-head"><h2>${d.tag} ${d.nome}: Brainstorm turbinado</h2><span>Hack na Ideação · ${hoje}</span></div>
+      <p class="p-q">${d.pergunta}</p>
+      <div class="p-grid">
+        ${COLUNAS.map((c, i) => `
+          <div class="p-col c${i + 1}">
+            <h3>${c.titulo}</h3>
+            ${b[c.id].length ? `<ul>${b[c.id].map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : `<p class="p-empty">Sem contribuições</p>`}
+          </div>`).join("")}
+      </div>
+      <p class="p-foot">Hack na Ideação: inove com propriedade e crie soluções únicas. Facilitação: Lara Guerreiro Pires, INPI.</p>
+    </section>`;
+  }).join("");
+}
+document.getElementById("print").onclick = () => { montarImpressao(); window.print(); };
+window.addEventListener("beforeprint", montarImpressao);
 
 render();
 </script>
