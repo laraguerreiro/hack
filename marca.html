@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Que marca é essa? | Hack na Ideação</title>
+<meta name="description" content="Hack na Ideação: identifique a forma de apresentação de cada marca.">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --violet: #5B3DA8;
+    --blue: #2F6FE0;
+    --ink: #1F2A5C;
+    --muted: #56608A;
+    --paper: #F4F6FC;
+    --tile: #FFFFFF;
+    --line: #D9E0F2;
+    --right: #13A876;
+    --wrong: #E0454F;
+    --display: "Bricolage Grotesque", "Arial Narrow", Arial, sans-serif;
+    --body: "Figtree", "Segoe UI", Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html, body { margin: 0; min-height: 100%; }
+  html { background: #F4F6FC; }
+  body {
+    font-family: var(--body);
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .band {
+    background: linear-gradient(120deg, var(--violet), var(--blue));
+    color: #fff;
+    padding: 20px 20px 72px;
+  }
+  .band-inner, main { max-width: 560px; margin: 0 auto; }
+  .event { font-size: 0.9rem; font-weight: 500; opacity: 0.85; margin: 0; }
+  main { padding: 0 20px 40px; margin-top: -52px; }
+
+  .card {
+    background: var(--tile);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px rgba(47, 58, 120, 0.14);
+    position: relative;
+    overflow: hidden;
+  }
+  h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
+  h1 { font-size: clamp(2.4rem, 9vw, 3.4rem); }
+  h2 { font-size: clamp(2rem, 8vw, 2.9rem); }
+  p { margin: 0; }
+  .lead { color: var(--muted); font-size: 1.05rem; margin-top: 14px; max-width: 42ch; }
+
+  .btn {
+    font: 700 1.05rem var(--body);
+    border: 0;
+    border-radius: 999px;
+    padding: 15px 28px;
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+    margin-top: 26px;
+    width: 100%;
+  }
+  .btn:hover { background: var(--violet); }
+  button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; padding: 0; list-style: none; }
+  .legend li { border: 1.5px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 0.9rem; font-weight: 500; color: var(--muted); }
+
+  /* Progresso */
+  .progress { display: flex; gap: 6px; margin-bottom: 22px; }
+  .progress span { height: 6px; flex: 1; border-radius: 3px; background: var(--line); }
+  .progress span.done { background: var(--blue); }
+  .progress span.now { background: var(--violet); }
+  .count { font-size: 0.9rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+  .desc { color: var(--muted); margin-top: 10px; font-size: 1.02rem; }
+  .ask { font-weight: 700; margin-top: 24px; }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .opt {
+    font: 700 1rem var(--body);
+    color: var(--ink);
+    background: var(--paper);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 16px 12px;
+    text-align: left;
+    cursor: pointer;
+    display: flex; gap: 10px; align-items: center;
+    min-height: 58px;
+    transition: background .15s, border-color .15s, opacity .2s;
+  }
+  .mark { margin-top: 18px; background: var(--paper); border-radius: 16px; height: 170px; display: grid; place-items: center; padding: 16px; }
+  .mark svg { max-width: 100%; max-height: 100%; }
+  .word { font-family: var(--display); font-weight: 800; font-size: clamp(1.8rem, 7vw, 2.6rem); color: var(--ink); text-align: center; line-height: 1.1; letter-spacing: -0.01em; }
+  .part { display: inline-block; margin-top: 14px; background: var(--violet); color: #fff; font-weight: 700; font-size: 0.9rem; border-radius: 999px; padding: 5px 14px; }
+  .options.three .opt:last-child { grid-column: 1 / -1; }
+  @media (max-width: 440px) { .options { grid-template-columns: 1fr; } }
+  .opt .key {
+    flex: none; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: #fff; color: var(--blue); font-size: 0.9rem;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--blue); }
+  .opt:disabled { cursor: default; }
+  .opt.is-right { background: var(--right); color: #fff; }
+  .opt.is-right .key { color: var(--right); }
+  .opt.is-wrong { background: var(--wrong); color: #fff; }
+  .opt.is-wrong .key { color: var(--wrong); }
+  .opt.faded { opacity: 0.4; }
+
+  /* Carimbo: o momento de destaque da página */
+  .stamp {
+    position: absolute; top: 62px; right: 18px;
+    font-family: var(--display); font-weight: 800;
+    font-size: 1rem; line-height: 1.1; text-align: center; text-transform: uppercase;
+    color: var(--violet);
+    border: 3px solid var(--violet);
+    border-radius: 10px;
+    padding: 8px 12px;
+    transform: rotate(-9deg);
+    max-width: 150px;
+    pointer-events: none;
+    animation: stamp .35s cubic-bezier(.2,1.6,.4,1) both;
+  }
+  @keyframes stamp { from { transform: rotate(-9deg) scale(2.2); opacity: 0; } to { transform: rotate(-9deg) scale(1); opacity: 1; } }
+
+  .card.stamped h2 { padding-right: 130px; }
+  @media (max-width: 380px) { .card.stamped h2 { padding-right: 0; } }
+  .feedback { margin-top: 22px; border-top: 2px dashed var(--line); padding-top: 18px; }
+  .verdict { font-family: var(--display); font-weight: 800; font-size: 1.5rem; line-height: 1.15; }
+  .verdict.ok { color: var(--right); }
+  .verdict.no { color: var(--wrong); }
+  .fact { margin-top: 8px; color: var(--ink); max-width: 60ch; }
+
+  /* Resultado */
+  .score { font-family: var(--display); font-weight: 800; font-size: clamp(4.5rem, 22vw, 7rem); line-height: 0.9; color: var(--violet); letter-spacing: -0.04em; }
+  .score small { font-size: 0.4em; color: var(--muted); letter-spacing: 0; }
+  .chat {
+    margin-top: 22px; background: var(--paper); border-radius: 14px; padding: 16px 18px;
+  }
+  .chat strong { display: block; margin-bottom: 4px; }
+  .hook { margin-top: 22px; font-family: var(--display); font-weight: 600; font-size: 1.35rem; line-height: 1.2; }
+  .ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+  .ghost:hover { background: var(--paper); }
+
+
+  .live { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-weight: 700; font-size: 0.95rem; background: rgba(255,255,255,0.16); border-radius: 999px; padding: 5px 14px 5px 10px; }
+  .live[hidden] { display: none; }
+  .live .dot { width: 9px; height: 9px; border-radius: 50%; background: #5CF0B5; box-shadow: 0 0 0 0 rgba(92,240,181,.7); animation: pulse 2s infinite; }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(92,240,181,0); } 100% { box-shadow: 0 0 0 0 rgba(92,240,181,0); } }
+
+  .compare { margin-top: 26px; }
+  .compare h3 { font-family: var(--display); font-weight: 800; font-size: 1.35rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .compare .note { color: var(--muted); font-size: 0.92rem; margin-bottom: 14px; }
+  .row { padding: 12px 0; border-top: 1px solid var(--line); }
+  .row-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .row-name { font-weight: 700; }
+  .mine { font-size: 0.85rem; font-weight: 700; white-space: nowrap; }
+  .mine.ok { color: var(--right); }
+  .mine.no { color: var(--wrong); }
+  .bar { height: 10px; background: var(--paper); border-radius: 5px; margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--blue); border-radius: 5px; transition: width .6s ease; }
+  .pct { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .highlight { margin-top: 18px; background: var(--violet); color: #fff; border-radius: 14px; padding: 16px 18px; font-weight: 500; }
+  @media (prefers-reduced-motion: reduce) { .live .dot { animation: none; } .bar i { transition: none; } }
+
+  footer { max-width: 560px; margin: 0 auto; padding: 0 20px 28px; font-size: 0.85rem; color: var(--muted); }
+
+  .enter { animation: enter .3s ease-out both; }
+  @keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 380px) { .options { grid-template-columns: 1fr; } .stamp { position: static; display: inline-block; margin-bottom: 14px; } }
+  @media (prefers-reduced-motion: reduce) { .stamp, .enter { animation: none; } }
+</style>
+</head>
+<body>
+  <div class="band">
+    <div class="band-inner">
+      <p class="event">Hack na Ideação, SESI Experience Hackathon</p>
+      <p class="live" id="live" hidden><span class="dot"></span><span id="liveText"></span></p>
+    </div>
+  </div>
+
+  <main>
+    <section class="card" id="app" aria-live="polite"></section>
+  </main>
+
+  <footer>Facilitação: Lara Guerreiro Pires, INPI</footer>
+
+<script type="module">
+/* ============================================================
+   CONFIGURAÇÃO DO FIREBASE
+   Cole aqui o bloco firebaseConfig gerado no console do Firebase.
+   Enquanto estiver vazio, o quiz funciona normalmente,
+   só sem o contador e sem a comparação com a turma.
+   ============================================================ */
+/* Nome da "gaveta" deste artefacto no banco. Cada artefacto usa um nome diferente. */
+const ARTEFATO = "marcas-apresentacao";
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAnrrc93EpTPseSXY4Iv-3tAkreU3yRCPc",
+  authDomain: "hack-pi.firebaseapp.com",
+  databaseURL: "https://hack-pi-default-rtdb.firebaseio.com",
+  projectId: "hack-pi",
+  storageBucket: "hack-pi.firebasestorage.app",
+  messagingSenderId: "58776084122",
+  appId: "1:58776084122:web:4ded8efa89196ea20a4923"
+};
+
+const OPTIONS = ["Nominativa", "Figurativa", "Mista", "Tridimensional"];
+const FORCA = ["Forte", "Fraca", "Não registrável"];
+const optsOf = q => q.options || OPTIONS;
+const KEYS = ["A", "B", "C", "D"];
+
+const QUESTIONS = [
+  {
+    name: "PAUSA",
+    about: "a PAUSA",
+    desc: "Marca de um app de pausas para quem trabalha no frigorífico.",
+    right: [0],
+    svg: `<svg viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A palavra PAUSA escrita em letras simples"><text x="160" y="72" text-anchor="middle" font-family="Arial, sans-serif" font-size="56" fill="#1F2A5C">PAUSA</text></svg>`,
+    fact: "Só palavras, sem nenhum estilo gráfico. A marca nominativa protege o nome em si, seja qual for a letra usada para escrevê-lo."
+  },
+  {
+    name: "moeda viva",
+    about: "a moeda viva",
+    desc: "Marca de um programa de educação financeira.",
+    right: [2],
+    svg: `<svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Uma moeda desenhada ao lado das palavras moeda viva em letras arredondadas"><circle cx="60" cy="60" r="42" fill="#F2B233"/><circle cx="60" cy="60" r="32" fill="none" stroke="#fff" stroke-width="5"/><path d="M52 44 q20 -6 16 10 q-4 12 -16 8 q-10 12 8 18" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><text x="118" y="74" font-family="'Bricolage Grotesque', Arial, sans-serif" font-weight="800" font-size="44" fill="#5B3DA8">moeda viva</text></svg>`,
+    fact: "Palavra e desenho juntos. A marca mista protege o conjunto: aquele nome com aquele visual."
+  },
+  {
+    name: "Um símbolo sem nome",
+    about: "o símbolo das folhas",
+    desc: "Símbolo de um serviço de apoio emocional no trabalho.",
+    right: [1],
+    svg: `<svg viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Duas folhas verdes formando um coração"><path d="M70 122 C20 90 12 48 36 30 C52 18 68 28 70 46 Z" fill="#13A876"/><path d="M70 122 C120 90 128 48 104 30 C88 18 72 28 70 46 Z" fill="#2F6FE0"/><path d="M70 118 L70 50" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>`,
+    fact: "Só imagem, sem nenhuma palavra. Muitas empresas registram o símbolo separado do nome, para protegê-lo também quando aparece sozinho."
+  },
+  {
+    name: "Um frasco diferente",
+    about: "o frasco em forma de gota",
+    desc: "A embalagem de um chá relaxante vendido nas cantinas das fábricas.",
+    right: [3],
+    svg: `<svg viewBox="0 0 140 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Um frasco tridimensional em forma de gota, com sombra"><defs><linearGradient id="gv" x1="0" x2="1"><stop offset="0" stop-color="#8FB4F5"/><stop offset=".45" stop-color="#2F6FE0"/><stop offset="1" stop-color="#1F2A5C"/></linearGradient></defs><ellipse cx="70" cy="148" rx="40" ry="7" fill="#1F2A5C" opacity=".15"/><rect x="58" y="8" width="24" height="16" rx="4" fill="#5B3DA8"/><path d="M62 24 L78 24 C80 46 112 70 112 104 C112 130 94 146 70 146 C46 146 28 130 28 104 C28 70 60 46 62 24 Z" fill="url(#gv)"/><path d="M44 92 C44 78 54 66 60 60" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".6"/></svg>`,
+    fact: "A forma do próprio produto ou da embalagem, quando é distintiva e não apenas funcional. Lembra da garrafa do quiz de abertura?"
+  },
+  {
+    name: "TALENTO+",
+    about: "a TALENTO+",
+    desc: "Marca de uma plataforma que conecta profissionais e indústrias.",
+    right: [2],
+    svg: `<svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A palavra TALENTO mais, em letras inclinadas e coloridas, sem desenho"><defs><linearGradient id="gt" x1="0" x2="1"><stop offset="0" stop-color="#5B3DA8"/><stop offset="1" stop-color="#13A876"/></linearGradient></defs><text x="180" y="74" text-anchor="middle" font-family="'Bricolage Grotesque', Arial, sans-serif" font-weight="800" font-style="italic" font-size="58" fill="url(#gt)" letter-spacing="-2">TALENTO+</text></svg>`,
+    fact: "Pegadinha! Não há desenho, mas as letras têm estilo e cores próprias. Quando a palavra tem uma grafia especial, a apresentação é mista."
+  },
+  {
+    name: "Um mascote",
+    about: "o mascote",
+    desc: "Personagem de uma campanha de segurança e bem-estar na indústria.",
+    right: [1],
+    svg: `<svg viewBox="0 0 140 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Um personagem sorridente de capacete amarelo"><ellipse cx="70" cy="142" rx="34" ry="6" fill="#1F2A5C" opacity=".12"/><rect x="36" y="96" width="68" height="44" rx="20" fill="#2F6FE0"/><circle cx="70" cy="70" r="36" fill="#F7D6B5"/><path d="M32 62 C32 30 108 30 108 62 Z" fill="#F2B233"/><rect x="26" y="58" width="88" height="10" rx="5" fill="#E09A1F"/><circle cx="57" cy="78" r="4.5" fill="#1F2A5C"/><circle cx="83" cy="78" r="4.5" fill="#1F2A5C"/><path d="M56 92 Q70 104 84 92" stroke="#1F2A5C" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+    fact: "Personagens e mascotes sem texto também são marcas figurativas. E, se o mascote aparecer junto com o nome, vira uma marca mista."
+  },
+  {
+    part: 2,
+    name: "ZUNDRA",
+    about: "a ZUNDRA",
+    desc: "Nome de um app de apoio à saúde mental no trabalho.",
+    word: "ZUNDRA",
+    options: FORCA,
+    right: [0],
+    fact: "Palavra inventada, sem significado: é o tipo de marca mais forte. Fácil de registrar e de defender. O desafio é fazer as pessoas associarem o nome ao produto."
+  },
+  {
+    part: 2,
+    name: "Calmaria",
+    about: "a Calmaria",
+    desc: "Nome de um app de pausas para quem trabalha na linha de produção.",
+    word: "Calmaria",
+    options: FORCA,
+    right: [1],
+    fact: "Sugere a ideia do produto sem descrevê-lo. Pode ser registrada, mas é mais fraca: fica mais difícil impedir nomes parecidos que também remetam à calma."
+  },
+  {
+    part: 2,
+    name: "Educação Financeira Fácil",
+    about: "a Educação Financeira Fácil",
+    desc: "Nome de um curso de educação financeira.",
+    word: "Educação Financeira Fácil",
+    options: FORCA,
+    right: [2],
+    fact: "Só descreve o serviço. A lei não permite registrar sinais genéricos ou meramente descritivos, porque todos precisam poder usar essas palavras."
+  },
+  {
+    part: 2,
+    name: "Girafa",
+    about: "a Girafa",
+    desc: "Nome de uma plataforma de educação financeira.",
+    word: "Girafa",
+    options: FORCA,
+    right: [0],
+    fact: "Pegadinha! É uma palavra comum, mas sem nenhuma relação com finanças. Usada fora do seu sentido habitual, é uma marca forte."
+  }
+];
+
+const app = document.getElementById("app");
+let current = 0;
+let score = 0;
+let results = [];
+let stats = null;           // { q0: { total, right }, ... }
+let db = null, fb = null;
+let counts = true;          // só a primeira rodada deste aparelho entra nas estatísticas
+
+try { counts = localStorage.getItem("marcasHackContado") !== "1"; } catch (e) {}
+
+async function initFirebase() {
+  if (!FIREBASE_CONFIG.databaseURL) return;
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    fb = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    db = fb.getDatabase(appMod.initializeApp(FIREBASE_CONFIG));
+
+    const me = fb.push(fb.ref(db, `${ARTEFATO}/presence`));
+    fb.onValue(fb.ref(db, ".info/connected"), snap => {
+      if (snap.val() === true) fb.onDisconnect(me).remove().then(() => fb.set(me, true));
+    });
+    fb.onValue(fb.ref(db, `${ARTEFATO}/presence`), snap => {
+      const n = snap.size || 0;
+      const live = document.getElementById("live");
+      document.getElementById("liveText").textContent =
+        n === 1 ? "1 pessoa respondendo agora" : `${n} pessoas respondendo agora`;
+      live.hidden = n < 1;
+    });
+    fb.onValue(fb.ref(db, `${ARTEFATO}/stats`), snap => {
+      stats = snap.val() || {};
+      if (document.getElementById("compare")) renderCompare();
+    });
+  } catch (e) {
+    db = null;
+  }
+}
+
+function record(i, ok) {
+  if (!db || !counts) return;
+  const upd = {};
+  upd[`${ARTEFATO}/stats/q${i}/total`] = fb.increment(1);
+  if (ok) upd[`${ARTEFATO}/stats/q${i}/right`] = fb.increment(1);
+  fb.update(fb.ref(db), upd).catch(() => {});
+}
+
+function el(html) {
+  app.innerHTML = html;
+  app.classList.remove("stamped");
+  app.classList.remove("enter");
+  void app.offsetWidth;
+  app.classList.add("enter");
+}
+
+function start() {
+  current = 0;
+  score = 0;
+  results = [];
+  el(`
+    <h1>Que marca é essa?</h1>
+    <p class="lead">Dez marcas inventadas para os desafios do hackathon, em duas partes. Depois, conte seu placar no chat.</p>
+    <p class="ask">Parte 1: qual é a forma de apresentação?</p>
+    <ul class="legend" aria-label="Opções da parte 1">
+      ${OPTIONS.map(o => `<li>${o}</li>`).join("")}
+    </ul>
+    <p class="ask">Parte 2: a marca é forte ou fraca?</p>
+    <ul class="legend" aria-label="Opções da parte 2">
+      ${FORCA.map(o => `<li>${o}</li>`).join("")}
+    </ul>
+    <button class="btn" id="go">Começar</button>
+  `);
+  document.getElementById("go").onclick = showQuestion;
+}
+
+function progress() {
+  return `<div class="progress" aria-hidden="true">${QUESTIONS.map((_, i) =>
+    `<span class="${i < current ? "done" : i === current ? "now" : ""}"></span>`).join("")}</div>`;
+}
+
+function showQuestion() {
+  const q = QUESTIONS[current];
+  el(`
+    ${progress()}
+    <p class="count">${current + 1} de ${QUESTIONS.length}</p>
+    <h2>${q.name}</h2>
+    <p class="desc">${q.desc}</p>
+    ${q.part === 2 && (current === 0 || QUESTIONS[current - 1].part !== 2) ? `<p class="part">Parte 2: agora, a força da marca</p>` : ""}
+    <div class="mark">${q.svg || `<span class="word">${q.word}</span>`}</div>
+    <p class="ask">${q.part === 2 ? "Essa marca é forte ou fraca?" : "Qual é a forma de apresentação?"}</p>
+    <div class="options${q.part === 2 ? " three" : ""}">
+      ${optsOf(q).map((o, i) => `<button class="opt" data-i="${i}"><span class="key">${KEYS[i]}</span>${o}</button>`).join("")}
+    </div>
+    <div id="fb"></div>
+  `);
+  app.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(+b.dataset.i));
+  app.querySelector(".opt").focus({ preventScroll: true });
+}
+
+function answer(choice) {
+  const q = QUESTIONS[current];
+  const ok = q.right.includes(choice);
+  if (ok) score++;
+  results[current] = ok;
+  record(current, ok);
+
+  app.querySelectorAll(".opt").forEach(b => {
+    const i = +b.dataset.i;
+    b.disabled = true;
+    if (q.right.includes(i)) b.classList.add("is-right");
+    else if (i === choice) b.classList.add("is-wrong");
+    else b.classList.add("faded");
+  });
+
+  const label = q.right.map(i => optsOf(q)[i]).join(" e ");
+  const stamp = document.createElement("div");
+  stamp.className = "stamp";
+  stamp.setAttribute("aria-hidden", "true");
+  stamp.textContent = label;
+  app.prepend(stamp);
+  app.classList.add("stamped");
+
+  let verdict;
+  if (ok && q.right.length > 1) verdict = "Certo! E tem mais uma resposta.";
+  else if (ok) verdict = "Acertou!";
+  else verdict = `Quase! A resposta é ${label.toLowerCase()}.`;
+
+  const last = current === QUESTIONS.length - 1;
+  document.getElementById("fb").innerHTML = `
+    <div class="feedback">
+      <p class="verdict ${ok ? "ok" : "no"}">${verdict}</p>
+      <p class="fact">${q.fact}</p>
+      <button class="btn" id="next">${last ? "Ver meu placar" : "Próxima"}</button>
+    </div>
+  `;
+  const next = document.getElementById("next");
+  next.onclick = () => { if (last) showResult(); else { current++; showQuestion(); } };
+  next.focus({ preventScroll: true });
+  next.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+}
+
+function showResult() {
+  const msg =
+    score === QUESTIONS.length ? "Gabaritou! Você já pensa como quem protege ideias." :
+    score >= 4 ? "Mandou bem! Seu radar de propriedade intelectual está ligado." :
+    score >= 2 ? "Bom começo! Até o fim da manhã, esse placar muda." :
+    "Tudo certo: é para isso que estamos aqui hoje.";
+  el(`
+    <p class="count">Seu placar</p>
+    <p class="score">${score}<small> de ${QUESTIONS.length}</small></p>
+    <p class="lead">${msg}</p>
+    <div id="compare"></div>
+    <div class="chat">
+      <strong>Agora é com você</strong>
+      Escreva no chat do Teams: “Acertei ${score} de ${QUESTIONS.length}”.
+    </div>
+    <p class="hook">Agora é a vez de vocês: criem nomes distintivos para as ideias dos times e vamos testá-los na busca de marcas.</p>
+    <button class="btn ghost" id="again">Jogar de novo</button>
+  `);
+  if (counts) { counts = false; try { localStorage.setItem("marcasHackContado", "1"); } catch (e) {} }
+  document.getElementById("again").onclick = start;
+  renderCompare();
+}
+
+function renderCompare() {
+  const box = document.getElementById("compare");
+  if (!box || !stats) return;
+  const rows = QUESTIONS.map((q, i) => {
+    const st = stats["q" + i] || {};
+    const total = st.total || 0;
+    const pct = total ? Math.round(100 * (st.right || 0) / total) : null;
+    return { name: q.name, about: q.about, mine: results[i], pct, total };
+  });
+  if (!rows.some(r => r.total > 0)) { box.innerHTML = ""; return; }
+
+  const players = Math.max(...rows.map(r => r.total));
+  let best = null;
+  rows.forEach(r => { if (r.mine && r.pct !== null && (!best || r.pct < best.pct)) best = r; });
+
+  box.className = "compare";
+  box.innerHTML = `
+    <h3>Você e a turma</h3>
+    <p class="note">${players === 1 ? "1 pessoa respondeu" : players + " pessoas responderam"} até agora. Os números se atualizam sozinhos.</p>
+    ${rows.map(r => `
+      <div class="row">
+        <div class="row-top">
+          <span class="row-name">${r.name}</span>
+          <span class="mine ${r.mine ? "ok" : "no"}">${r.mine ? "✓ Você acertou" : "✗ Você errou"}</span>
+        </div>
+        <div class="bar" role="img" aria-label="${r.pct ?? 0}% da turma acertou"><i style="width:${r.pct ?? 0}%"></i></div>
+        <p class="pct">${r.pct === null ? "Sem respostas ainda" : r.pct + "% da turma acertou"}</p>
+      </div>`).join("")}
+    ${best && best.pct < 60 ? `<p class="highlight">Você acertou ${best.about}, que só ${best.pct}% da turma acertou!</p>` : ""}
+  `;
+}
+
+initFirebase();
+start();
+</script>
+</body>
+</html>
