@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Brainstorm turbinado | Hack na Ideação</title>
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --violet: #5B3DA8; --blue: #2F6FE0; --ink: #1F2A5C; --muted: #56608A;
+    --paper: #F4F6FC; --line: #D9E0F2; --tile: #FFFFFF;
+    --c1: #2F6FE0; --c2: #E0454F; --c3: #13A876; --c4: #5B3DA8;
+    --display: "Bricolage Grotesque", "Arial Narrow", Arial, sans-serif;
+    --body: "Figtree", "Segoe UI", Arial, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--paper); }
+  body { font-family: var(--body); color: var(--ink); line-height: 1.4; -webkit-font-smoothing: antialiased; }
+
+  header { background: linear-gradient(120deg, var(--violet), var(--blue)); color: #fff; padding: 18px 28px 0; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .kicker { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; margin: 0; }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.8rem, 3vw, 2.5rem); margin: 2px 0 0; letter-spacing: -0.02em; }
+  .tabs { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+  .tab {
+    font: 700 1rem var(--body); color: #fff; background: rgba(255,255,255,0.14);
+    border: 0; border-radius: 12px 12px 0 0; padding: 12px 20px; cursor: pointer;
+  }
+  .tab .tag { font-family: var(--display); font-weight: 800; margin-right: 6px; }
+  .tab[aria-selected="true"] { background: var(--paper); color: var(--ink); }
+  .tab:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  main { padding: 20px 28px 32px; }
+  .question { font-size: 1.15rem; color: var(--muted); margin: 0 0 18px; max-width: 110ch; }
+  .question strong { color: var(--ink); }
+
+  .board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: start; }
+  .col { background: var(--tile); border-radius: 16px; padding: 16px; border-top: 6px solid var(--accent); box-shadow: 0 6px 20px rgba(47,58,120,0.08); display: flex; flex-direction: column; min-height: 420px; }
+  .col h2 { font-family: var(--display); font-weight: 800; font-size: 1.35rem; margin: 0; line-height: 1.1; }
+  .col .hint { font-size: 0.9rem; color: var(--muted); margin: 4px 0 12px; }
+  .count { font-size: 0.8rem; font-weight: 700; color: var(--accent); }
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; flex: 1; align-content: start; }
+  .card {
+    background: var(--paper); border-left: 4px solid var(--accent); border-radius: 10px;
+    padding: 10px 34px 10px 12px; font-size: 1.12rem; font-weight: 500; position: relative;
+    animation: pop .2s ease-out both;
+  }
+  .card [contenteditable] { outline: none; display: block; }
+  .card [contenteditable]:focus { background: #fff; border-radius: 4px; box-shadow: 0 0 0 2px var(--accent); }
+  .del { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; opacity: 0; }
+  .card:hover .del, .del:focus-visible { opacity: 1; }
+  .del:hover { background: var(--line); }
+  .add { margin-top: 12px; display: flex; gap: 6px; }
+  .add input { flex: 1; min-width: 0; font: 500 1rem var(--body); color: var(--ink); border: 2px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #fff; }
+  .add input:focus { border-color: var(--accent); outline: none; }
+  .add button { font: 700 1.2rem var(--body); border: 0; border-radius: 10px; background: var(--accent); color: #fff; width: 44px; cursor: pointer; }
+
+  .c1 { --accent: var(--c1); } .c2 { --accent: var(--c2); } .c3 { --accent: var(--c3); } .c4 { --accent: var(--c4); }
+  .c4 { background: #F3EFFC; }
+
+  /* Visão geral */
+  .overview { display: grid; gap: 16px; }
+  .ov-row { background: var(--tile); border-radius: 16px; padding: 18px 20px; box-shadow: 0 6px 20px rgba(47,58,120,0.08); display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
+  .ov-title .tag { font-family: var(--display); font-weight: 800; font-size: 2rem; color: var(--violet); display: block; line-height: 1; }
+  .ov-title span { font-weight: 700; }
+  .ov-title small { display: block; color: var(--muted); margin-top: 6px; }
+  .ov-diff { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; align-content: start; }
+  .ov-diff li { background: #F3EFFC; border-left: 4px solid var(--violet); border-radius: 10px; padding: 10px 12px; font-size: 1.12rem; font-weight: 500; }
+  .ov-empty { color: var(--muted); font-style: italic; }
+
+  footer { padding: 0 28px 24px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 0.85rem; }
+  .ghost { font: 600 0.85rem var(--body); color: var(--muted); background: transparent; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .ghost:hover { background: #fff; }
+
+  @keyframes pop { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+  @media (max-width: 1000px) { .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ov-row { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .board { grid-template-columns: 1fr; } header, main, footer { padding-left: 16px; padding-right: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div>
+      <p class="kicker">Hack na Ideação</p>
+      <h1>Brainstorm turbinado</h1>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+</header>
+
+<main id="main"></main>
+
+<footer>
+  <span>Facilitação: Lara Guerreiro Pires, INPI</span>
+  <button class="ghost" id="reset">Limpar o quadro deste desafio</button>
+</footer>
+
+<script>
+const DESAFIOS = [
+  { id: "d1", tag: "#D1", nome: "Abate",
+    pergunta: "Prevenir, identificar precocemente e tratar os impactos da atividade de abate sobre a saúde mental dos colaboradores, de forma contínua, acessível, confidencial e integrada à rotina.",
+    inicial: ["Pulseira que mede a variabilidade cardíaca e envia alertas (US10022057B1)"] },
+  { id: "d2", tag: "#D2", nome: "Dívidas",
+    pergunta: "Como transformar educação financeira em ferramenta de prevenção ao estresse, à ansiedade e ao sofrimento causados pelas dívidas?",
+    inicial: ["Cartão com tela que mostra quanto resta do orçamento (US10671995)"] },
+  { id: "d3", tag: "#D3", nome: "Talentos",
+    pergunta: "Como tornar a conexão entre profissionais e empresas mais assertiva, ágil e sustentável, reduzindo contratações incompatíveis e rotatividade?",
+    inicial: ["Simulador de solda que avalia a técnica e atrai novos profissionais (US20100048273A1)"] }
+];
+const COLUNAS = [
+  { id: "existe", titulo: "O que já existe", dica: "Soluções encontradas na busca" },
+  { id: "falta", titulo: "O que ninguém resolveu", dica: "Lacunas e limitações" },
+  { id: "combina", titulo: "E se combinássemos…?", dica: "Juntar ideias de áreas diferentes" },
+  { id: "diferenca", titulo: "Nossa diferença", dica: "Uma proposta em uma frase" }
+];
+const KEY = "brainstormHackIdeacao";
+
+let data = load();
+let atual = "d1";
+
+function load() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!d) {
+    d = {};
+    DESAFIOS.forEach(x => {
+      d[x.id] = { existe: [...x.inicial], falta: [], combina: [], diferenca: [] };
+    });
+  }
+  return d;
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} }
+
+function esc(t) { return t.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function renderTabs() {
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = DESAFIOS.map(d =>
+    `<button class="tab" role="tab" aria-selected="${d.id === atual}" data-id="${d.id}"><span class="tag">${d.tag}</span>${d.nome}</button>`
+  ).join("") + `<button class="tab" role="tab" aria-selected="${atual === "geral"}" data-id="geral">Visão geral</button>`;
+  tabs.querySelectorAll(".tab").forEach(b => b.onclick = () => { atual = b.dataset.id; render(); });
+}
+
+function render() {
+  renderTabs();
+  document.getElementById("reset").hidden = atual === "geral";
+  const main = document.getElementById("main");
+  if (atual === "geral") return renderGeral(main);
+
+  const d = DESAFIOS.find(x => x.id === atual);
+  const board = data[atual];
+  main.innerHTML = `
+    <p class="question"><strong>${d.tag} ${d.nome}:</strong> ${d.pergunta}</p>
+    <div class="board">
+      ${COLUNAS.map((c, i) => `
+        <section class="col c${i + 1}" aria-label="${c.titulo}">
+          <h2>${c.titulo}</h2>
+          <p class="hint">${c.dica} · <span class="count">${board[c.id].length}</span></p>
+          <ul class="cards">
+            ${board[c.id].map((t, k) => `
+              <li class="card"><span contenteditable="true" data-col="${c.id}" data-k="${k}">${esc(t)}</span>
+              <button class="del" data-col="${c.id}" data-k="${k}" aria-label="Remover">×</button></li>`).join("")}
+          </ul>
+          <form class="add" data-col="${c.id}">
+            <input type="text" placeholder="Digite e aperte Enter" aria-label="Nova ideia em ${c.titulo}">
+            <button type="submit" aria-label="Adicionar">+</button>
+          </form>
+        </section>`).join("")}
+    </div>`;
+
+  main.querySelectorAll("form.add").forEach(f => f.onsubmit = e => {
+    e.preventDefault();
+    const inp = f.querySelector("input");
+    const t = inp.value.trim();
+    if (!t) return;
+    const col = f.dataset.col;
+    board[col].push(t);
+    save(); render();
+    const again = document.querySelector(`form.add[data-col="${col}"] input`);
+    again.focus();
+  });
+  main.querySelectorAll(".del").forEach(b => b.onclick = () => {
+    board[b.dataset.col].splice(+b.dataset.k, 1);
+    save(); render();
+  });
+  main.querySelectorAll("[contenteditable]").forEach(el => {
+    el.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } };
+    el.onblur = () => {
+      const t = el.textContent.trim();
+      const col = el.dataset.col, k = +el.dataset.k;
+      if (t) board[col][k] = t; else board[col].splice(k, 1);
+      save(); render();
+    };
+  });
+}
+
+function renderGeral(main) {
+  main.innerHTML = `
+    <p class="question"><strong>Visão geral:</strong> as propostas de diferença de cada desafio, para levar à maratona.</p>
+    <div class="overview">
+      ${DESAFIOS.map(d => {
+        const b = data[d.id];
+        const total = COLUNAS.reduce((n, c) => n + b[c.id].length, 0);
+        return `
+        <section class="ov-row">
+          <div class="ov-title"><span class="tag">${d.tag}</span><span>${d.nome}</span><small>${total} ${total === 1 ? "contribuição" : "contribuições"} no quadro</small></div>
+          ${b.diferenca.length
+            ? `<ul class="ov-diff">${b.diferenca.map(t => `<li>${esc(t)}</li>`).join("")}</ul>`
+            : `<p class="ov-empty">Nenhuma proposta de diferença ainda.</p>`}
+        </section>`;
+      }).join("")}
+    </div>`;
+}
+
+document.getElementById("reset").onclick = () => {
+  const d = DESAFIOS.find(x => x.id === atual);
+  if (!confirm(`Limpar todo o quadro do ${d.tag}? O exemplo da patente volta para a primeira coluna.`)) return;
+  data[atual] = { existe: [...d.inicial], falta: [], combina: [], diferenca: [] };
+  save(); render();
+};
+
+render();
+</script>
+</body>
+</html>
